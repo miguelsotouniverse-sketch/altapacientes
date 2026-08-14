@@ -1030,9 +1030,22 @@ function storeIneImage(ctx, tipo, dataUrl) {
 function showIneImage(ctx, tipo, urlOrDataUrl, fromServer) {
   const card = $(ctx + '-ine-' + tipo);
   card.classList.add('has-image');
+  // Convertir URL de Drive a thumbnail visible en <img>
+  let imgSrc = urlOrDataUrl;
+  let openUrl = urlOrDataUrl;
+  if (fromServer && /drive\.google\.com/.test(urlOrDataUrl)) {
+    const m = urlOrDataUrl.match(/\/d\/([A-Za-z0-9_-]+)/);
+    if (m) {
+      const fileId = m[1];
+      imgSrc = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w1200';
+      openUrl = 'https://drive.google.com/file/d/' + fileId + '/view';
+    }
+  }
   card.innerHTML = `
     <div class="ine-label">${tipo === 'frente' ? 'Frente' : 'Reverso'}${fromServer ? ' (ya en sistema)' : ' (capturada)'}</div>
-    <img src="${urlOrDataUrl}" class="ine-preview" alt="">
+    <a href="${openUrl}" target="_blank" rel="noopener" title="Abrir en Drive">
+      <img src="${imgSrc}" class="ine-preview" alt="" style="cursor: zoom-in;">
+    </a>
     <div class="ine-actions">
       <button type="button" class="btn btn-secondary" onclick="abrirCamara('${ctx}','${tipo}')">Volver a tomar</button>
       <label class="btn btn-ghost" style="cursor: pointer;">Subir otra<input type="file" accept="image/*" style="display: none;" onchange="subirArchivo(event,'${ctx}','${tipo}')"></label>
