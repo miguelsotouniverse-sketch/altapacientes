@@ -789,6 +789,21 @@ $('btn-save-create').addEventListener('click', async () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
   }
+  // Si el backend detectó duplicado por teléfono, NO fue alta nueva — avisar y decidir
+  if (res.duplicado) {
+    const msg = (res.mensaje || 'Ya existe un paciente con este teléfono') +
+      '\n\n¿Qué deseas hacer?\n\n' +
+      '• Aceptar → abrir el paciente existente (ID ' + res.id + ')\n' +
+      '• Cancelar → regresar al formulario (si es otra persona con el mismo teléfono, cámbialo o agrega un sufijo tipo " / M" para marcarlo como distinto)';
+    const abrir = confirm(msg);
+    btn.disabled = false; btn.textContent = 'Guardar paciente';
+    if (abrir) {
+      editingId = res.id;
+      const r2 = await callAPI('obtener', { id: res.id });
+      if (r2.ok) goToEdit(r2.paciente);
+    }
+    return;
+  }
   const newId = res.id;
 
   btn.textContent = 'Subiendo fotos…';
